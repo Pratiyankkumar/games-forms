@@ -12,25 +12,23 @@ import { Label } from "./components/ui/label";
 import { Button } from "./components/ui/button";
 import { Alert, AlertDescription } from "./components/ui/alert";
 import { Loader2 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./components/ui/select";
 
 export default function Form() {
   const [formData, setFormData] = useState({
-    players: [
-      { name: "", gameUid: "" },
-      { name: "", gameUid: "" },
-      { name: "", gameUid: "" },
-      { name: "", gameUid: "" },
-    ],
+    playerCount: 1,
+    players: [{ name: "", gameUid: "" }],
     email: "",
   });
 
   const [errors, setErrors] = useState({
-    players: [
-      { name: "", gameUid: "" },
-      { name: "", gameUid: "" },
-      { name: "", gameUid: "" },
-      { name: "", gameUid: "" },
-    ],
+    players: [{ name: "", gameUid: "" }],
     email: "",
   });
 
@@ -40,15 +38,32 @@ export default function Form() {
     message: "",
     type: "",
   });
+
   const validateEmail = (email) => {
     return email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/);
+  };
+
+  const handlePlayerCountChange = (value) => {
+    const playerCount = parseInt(value);
+    setFormData((prevState) => ({
+      ...prevState,
+      playerCount,
+      players: Array(playerCount)
+        .fill()
+        .map((_, i) => prevState.players[i] || { name: "", gameUid: "" }),
+    }));
+    setErrors((prevState) => ({
+      ...prevState,
+      players: Array(playerCount)
+        .fill()
+        .map((_, i) => prevState.players[i] || { name: "", gameUid: "" }),
+    }));
   };
 
   const handleInputChange = (index, field, value) => {
     const updatedPlayers = [...formData.players];
     updatedPlayers[index] = { ...updatedPlayers[index], [field]: value };
 
-    // Clear error when user starts typing
     const updatedErrors = [...errors.players];
     updatedErrors[index] = { ...updatedErrors[index], [field]: "" };
 
@@ -63,7 +78,7 @@ export default function Form() {
     }));
   };
 
-  const handleemailChange = (e) => {
+  const handleEmailChange = (e) => {
     const value = e.target.value;
     setFormData((prevState) => ({
       ...prevState,
@@ -78,16 +93,10 @@ export default function Form() {
   const validateForm = () => {
     let isValid = true;
     const newErrors = {
-      players: [
-        { name: "", gameUid: "" },
-        { name: "", gameUid: "" },
-        { name: "", gameUid: "" },
-        { name: "", gameUid: "" },
-      ],
+      players: formData.players.map(() => ({ name: "", gameUid: "" })),
       email: "",
     };
 
-    // Validate players
     formData.players.forEach((player, index) => {
       if (!player.name.trim()) {
         newErrors.players[index].name = "Name is required";
@@ -99,7 +108,6 @@ export default function Form() {
       }
     });
 
-    // Validate email
     if (!formData.email.trim()) {
       newErrors.email = "Email is required";
       isValid = false;
@@ -137,14 +145,9 @@ export default function Form() {
 
         if (req.status === 200) {
           showNotification("Form submitted successfully!", "success");
-          // Optionally reset form here
           setFormData({
-            players: [
-              { name: "", gameUid: "" },
-              { name: "", gameUid: "" },
-              { name: "", gameUid: "" },
-              { name: "", gameUid: "" },
-            ],
+            playerCount: 1,
+            players: [{ name: "", gameUid: "" }],
             email: "",
           });
         } else {
@@ -190,7 +193,6 @@ export default function Form() {
         </div>
       )}
       <Card className="w-full max-w-2xl mx-auto z-10 backdrop-blur-sm relative">
-        {/* Keep existing CardHeader */}
         <CardHeader>
           <CardTitle className="text-3xl font-bold text-center text-purple-600">
             Free fire gaming form
@@ -200,7 +202,6 @@ export default function Form() {
           </CardDescription>
         </CardHeader>
 
-        {/* Keep existing QR code section */}
         <div className="flex justify-center mb-6">
           <div className="bg-white p-4 rounded-lg shadow-lg">
             <img
@@ -214,10 +215,26 @@ export default function Form() {
           </div>
         </div>
 
-        {/* Keep existing CardContent with form fields */}
         <CardContent>
           <form onSubmit={handleSubmit}>
             <div className="grid w-full items-center gap-6">
+              <div className="flex flex-col space-y-1.5">
+                <Label htmlFor="playerCount">Number of Players</Label>
+                <Select
+                  value={formData.playerCount.toString()}
+                  onValueChange={handlePlayerCountChange}
+                >
+                  <SelectTrigger id="playerCount">
+                    <SelectValue placeholder="Select number of players" />
+                  </SelectTrigger>
+                  <SelectContent position="popper">
+                    <SelectItem value="1">1 Player</SelectItem>
+                    <SelectItem value="2">2 Players</SelectItem>
+                    <SelectItem value="3">3 Players</SelectItem>
+                    <SelectItem value="4">4 Players</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               {formData.players.map((player, index) => (
                 <div key={index} className="space-y-4">
                   <h3 className="text-lg font-semibold text-purple-600">
@@ -273,7 +290,7 @@ export default function Form() {
                   id="email"
                   type="email"
                   value={formData.email}
-                  onChange={handleemailChange}
+                  onChange={handleEmailChange}
                   placeholder="Enter your email address"
                   className={`bg-white/50 backdrop-blur-sm ${
                     errors.email ? "border-red-500" : ""

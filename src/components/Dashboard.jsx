@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "./components/ui/card";
 import {
   Table,
@@ -8,38 +9,14 @@ import {
   TableRow,
 } from "./components/ui/table";
 import { Avatar, AvatarFallback } from "./components/ui/avatar";
-import { useEffect, useState } from "react";
+import { Button } from "./components/ui/button";
 import { formatTimeDiff } from "../utils/formatTimeDiff";
-
-// Mock data for squads
-// const squads = [
-//   {
-//     id: 1,
-//     email: "squad1@example.com",
-//     players: [
-//       { name: "John Doe", uid: "JD001" },
-//       { name: "Jane Smith", uid: "JS002" },
-//       { name: "Bob Johnson", uid: "BJ003" },
-//       { name: "Alice Brown", uid: "AB004" },
-//     ],
-//   },
-//   {
-//     id: 2,
-//     email: "squad2@example.com",
-//     players: [
-//       { name: "Emma Wilson", uid: "EW005" },
-//       { name: "Michael Lee", uid: "ML006" },
-//       { name: "Olivia Davis", uid: "OD007" },
-//       { name: "William Taylor", uid: "WT008" },
-//     ],
-//   },
-
-//   // Add more squads as needed
-// ];
+import { Loader2, TriangleAlert } from "lucide-react";
 
 export default function Dashboard() {
   const [squads, setSquads] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [squadType, setSquadType] = useState("All");
 
   useEffect(() => {
     async function fetchSquad() {
@@ -62,14 +39,70 @@ export default function Dashboard() {
   }, []);
 
   if (isLoading) {
-    return isLoading && <p>Loading</p>;
+    return (
+      <div className="w-full h-full my-auto flex justify-center items-center">
+        <Loader2 className="w-10 h-10 mt-40  animate-spin" />
+      </div>
+    );
   }
+
+  if (squads.length === 0) {
+    return (
+      <div className="w-full h-full my-auto flex justify-center items-center">
+        <div className="flex flex-col items-center mt-40">
+          <TriangleAlert className="w-10 h-10 " />
+          <p className="text-2xl font-bold">No Data Available 😥</p>
+        </div>
+      </div>
+    );
+  }
+
+  const filteredSquads = squads.filter((squad) => {
+    switch (squadType) {
+      case "Single":
+        return squad.players.length === 1;
+      case "Squad":
+        return squad.players.length === 4;
+      case "Duo":
+        return squad.players.length === 2;
+      case "Triple":
+        return squad.players.length === 3;
+      default:
+        return true;
+    }
+  });
 
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Squad Dashboard</h1>
+      <div className="flex space-x-2 mb-4">
+        <Button
+          variant={squadType === "Single" ? "default" : "outline"}
+          onClick={() => setSquadType("Single")}
+        >
+          Single
+        </Button>
+        <Button
+          variant={squadType === "Squad" ? "default" : "outline"}
+          onClick={() => setSquadType("Squad")}
+        >
+          Squad
+        </Button>
+        <Button
+          variant={squadType === "Duo" ? "default" : "outline"}
+          onClick={() => setSquadType("Duo")}
+        >
+          Duo
+        </Button>
+        <Button
+          variant={squadType === "Triple" ? "default" : "outline"}
+          onClick={() => setSquadType("Triple")}
+        >
+          Triple
+        </Button>
+      </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {squads.map((squad) => (
+        {filteredSquads.map((squad) => (
           <Card key={squad.id}>
             <CardHeader>
               <CardTitle>Squad {squad.id}</CardTitle>
