@@ -9,6 +9,7 @@ import {
 } from "./components/ui/table";
 import { Avatar, AvatarFallback } from "./components/ui/avatar";
 import { useEffect, useState } from "react";
+import { formatTimeDiff } from "../utils/formatTimeDiff";
 
 // Mock data for squads
 // const squads = [
@@ -72,6 +73,7 @@ export default function Dashboard() {
           <Card key={squad.id}>
             <CardHeader>
               <CardTitle>Squad {squad.id}</CardTitle>
+              <p>Created At: {formatTimeDiff(squad.createdAt)} ago</p>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground mb-4">
